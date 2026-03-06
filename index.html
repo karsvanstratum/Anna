@@ -23,7 +23,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-const { useState, useCallback } = React;
+const { useState, useCallback, useEffect } = React;
 
 const GF = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;700&family=Architects+Daughter&display=swap');`;
 
@@ -518,17 +518,22 @@ function KastTab({ books, setBooks, setSelBook, showToast, th }) {
 /* ─── KLAS TAB ────────────────────────────────────────────────────────── */
 function KlasTab({ books, th }) {
   const [sub, setSub]           = useState("bord");
-  const [klasBoeken, setKlasBoeken] = useState(INIT_KLAS);
-  const [uitd, setUitd]         = useState(INIT_UITD);
-  const [done, setDone]         = useState([]);
+  const [klasBoeken, setKlasBoeken] = useState(() => lsLoad("bh_klasboeken", INIT_KLAS));
+  const [uitd, setUitd]         = useState(() => lsLoad("bh_uitd", INIT_UITD));
+  const [done, setDone]         = useState(() => lsLoad("bh_done", []));
   const [bord, setBord]         = useState(false);
   const [jufBoek, setJufBoek]   = useState(books.find(b=>b.status==="lezen")||books[0]);
-  const [boodschap, setBoodschap]= useState("Lezen is reizen zonder je huis te verlaten ✨");
+  const [boodschap, setBoodschap]= useState(() => lsLoad("bh_boodschap", "Lezen is reizen zonder je huis te verlaten ✨"));
   const [addKlas, setAddKlas]   = useState(false);
   const [addUitd, setAddUitd]   = useState(false);
   const [nk, setNk]             = useState({titel:"",auteur:"",niveau:"",leeftijd:"",emoji:"📖",kleur:"#6B8CFF",omschrijving:""});
   const [nu, setNu]             = useState({tekst:"",emoji:"⭐",kleur:"#FFD93D"});
   const [bingoFull, setBingoFull] = useState(false);
+
+  useEffect(() => { lsSave("bh_klasboeken", klasBoeken); }, [klasBoeken]);
+  useEffect(() => { lsSave("bh_uitd", uitd); }, [uitd]);
+  useEffect(() => { lsSave("bh_done", done); }, [done]);
+  useEffect(() => { lsSave("bh_boodschap", boodschap); }, [boodschap]);
 
   const grid = uitd.slice(0,9);
   const bingo = hasBingo(done, grid);
@@ -822,17 +827,31 @@ function InstellingenTab({ storeName, setStoreName, themeId, setThemeId, goal, s
   );
 }
 
+/* ─── LOCALSTORAGE HELPERS ─────────────────────────────────────────────── */
+function lsLoad(key, fallback) {
+  try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : fallback; } catch(e) { return fallback; }
+}
+function lsSave(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+}
+
 /* ─── APP ─────────────────────────────────────────────────────────────── */
 function App() {
   const [tab,       setTab]       = useState("kast");
-  const [books,     setBooks]     = useState(INIT_BOOKS);
-  const [coins,     setCoins]     = useState(142);
-  const [streak]                  = useState(7);
+  const [books,     setBooks]     = useState(() => lsLoad("bh_books", INIT_BOOKS));
+  const [coins,     setCoins]     = useState(() => lsLoad("bh_coins", 142));
+  const [streak]                  = useState(() => lsLoad("bh_streak", 7));
   const [selBook,   setSelBook]   = useState(null);
   const [toast,     setToast]     = useState(null);
-  const [storeName, setStoreName] = useState("Anna's Boekenhoekje");
-  const [themeId,   setThemeId]   = useState("warm");
-  const [goal,      setGoal]      = useState(20);
+  const [storeName, setStoreName] = useState(() => lsLoad("bh_storename", "Anna's Boekenhoekje"));
+  const [themeId,   setThemeId]   = useState(() => lsLoad("bh_themeid", "warm"));
+  const [goal,      setGoal]      = useState(() => lsLoad("bh_goal", 20));
+
+  useEffect(() => { lsSave("bh_books", books); }, [books]);
+  useEffect(() => { lsSave("bh_coins", coins); }, [coins]);
+  useEffect(() => { lsSave("bh_storename", storeName); }, [storeName]);
+  useEffect(() => { lsSave("bh_themeid", themeId); }, [themeId]);
+  useEffect(() => { lsSave("bh_goal", goal); }, [goal]);
 
   const th = THEMES.find(t=>t.id===themeId) || THEMES[0];
 
