@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+const { useState, useCallback } = React;
 
 const GF = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lato:wght@300;400;700&family=Architects+Daughter&display=swap');`;
 
